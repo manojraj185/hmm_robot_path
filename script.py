@@ -1,27 +1,10 @@
-
-
-
 import numpy as np
-import math
 
 def int_to_coord(n):
 	return [n/10, n%10]
 
 def coord_to_int(c):
 	return (c[0]*10 + c[1])
-
-'''def get_matrix():
-	f= open("hmm-data.txt", 'r')
-	mat = []
-	for i in range(0,10):
-		st = f.reaadline(i+2)
-		words = st.split(" ")
-		row = []
-		for w in words:
-			row.append(int(w))
-		mat.append(row)
-	f.close()
-	return mat'''
 
 #the number of possible state values
 K = 100
@@ -54,6 +37,8 @@ def free_space(i,j):
 def trans_prob(x1,y1,x2,y2):
 
     if matrix[x2,y2] == 0:
+        return 0
+    if x1==x2 and y1==y2:
         return 0
     if x1 != x2 and y1 != y2:
         return 0
@@ -99,23 +84,13 @@ def cal_emip():
             entry = entry*emission_prob((9,9),(i,j))
             emi.append(entry)
     return emi 
-#floororceil forc = 1 ,for ceil and 0 for floor
-'''def cround(n, forc):
-    n = n*10
-    if forc==1:
-        n = math.ceil(n)
-        return float(n)/10
-    else:
-        n = math.floor(n)
-        return float(n)/10 '''
-                         
 def valid_for_state(state,tower, val):
     d = np.linalg.norm(np.array(int_to_coord(state)) - np.array(tower))
     if val >= round(0.7*d,1) and val <= round(1.3*d,1):
         return True
     return False
 
-#given a state and an observed matrix, what is the probability of picking the value in given_obs
+#given a state and an observed tuple, what is the probability of picking the value in given_obs
 def B(state,given_obs):
     global gtower
     global NO_TOWERS
@@ -142,7 +117,6 @@ def viterbi():
     global obs
     global ROW
     global COL
-    
     T1 = []
     T2 = []                                   
     t1 = []
@@ -167,7 +141,10 @@ def viterbi():
     z[len(obs)-1] = np.argmax(T1[len(obs)-1])
     for i in reversed(range(1,len(obs))):
                   z[i-1] = T2[i][z[i]]
-    return z
+    path = []
+    for ele in z:
+        path.append(int_to_coord(ele))
+    return path
                          
 def main():
     global matrix
@@ -177,21 +154,13 @@ def main():
     matrix = np.array([[1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1],[1,1,0,0,0,0,0,1,1,1],[1,1,0,1,1,1,0,1,1,1],[1,1,0,1,1,1,0,1,1,1],[1,1,0,1,1,1,0,1,1,1],[1,1,0,1,1,1,0,1,1,1],[1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1] ])
     #print matrix
     obs = np.array([[6.3,5.9,5.5,6.7], [5.6, 7.2, 4.4, 6.8], [7.6,9.4,4.3,5.4], [9.5,10.0,3.7,6.6], [6.0,10.7,2.8,5.8], [9.3,10.2,2.6,5.4],[8.0,13.1,1.9,9.4], [6.4,8.2,3.9,8.8], [5.0,10.3,3.6,7.2], [3.8,9.8,4.4,8.8], [3.3,7.6,4.3,8.5]])
-    
     global freep
     freep = cal_freep()
     pie = pie_init()
-    
     emip = cal_emip()
-    path = viterbi()
-    print path
-    #print noisy_measurements
-    #print free_space(0,9)
-
-    #print trans_prob(7,2,6,3)
-
-
-
+    print "Trajecotory of the Robot in the grid world:"
+    print viterbi()
+    
 
 if __name__ == '__main__':
     main()
